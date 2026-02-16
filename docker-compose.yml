@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: devops_db
+    restart: always
+    environment:
+      POSTGRES_USER: devops_user
+      POSTGRES_PASSWORD: devops_password
+      POSTGRES_DB: devops_dashboard
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: devops_jenkins
+    restart: always
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+
+volumes:
+  postgres_data:
+  jenkins_home:

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps Dashboard | Centralized Monitoring</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://kit.fontawesome.com/your-code-here.js" crossorigin="anonymous"></script>
+</head>
+<body class="dark-theme">
+    <div class="background-overlay"></div>
+    
+    <nav class="navbar">
+        <div class="logo">
+            <span class="logo-icon">🚀</span>
+            <h1>DevOps<span>Pulse</span></h1>
+        </div>
+        <div class="nav-links">
+            <div class="status-indicator">
+                <span class="pulse green"></span> System Online
+            </div>
+            <button id="refresh-btn" class="btn-primary">Refresh Data</button>
+        </div>
+    </nav>
+
+    <main class="dashboard-grid">
+        <!-- GitHub Card -->
+        <div class="card glass-card" id="github-card">
+            <div class="card-header">
+                <i class="fab fa-github"></i>
+                <h2>GitHub Status</h2>
+            </div>
+            <div class="card-content">
+                <div class="stats-overview" id="github-stats">
+                    <p>Loading repository metrics...</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="githubChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jenkins Card -->
+        <div class="card glass-card" id="jenkins-card">
+            <div class="card-header">
+                <i class="fab fa-jenkins"></i>
+                <h2>Jenkins Builds</h2>
+            </div>
+            <div class="card-content">
+                <div class="stats-list" id="jenkins-list">
+                    <p>Connecting to Jenkins...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Docker Card -->
+        <div class="card glass-card" id="docker-card">
+            <div class="card-header">
+                <i class="fab fa-docker"></i>
+                <h2>Docker Instance</h2>
+            </div>
+            <div class="card-content">
+                <div class="docker-list" id="docker-list">
+                    <p>Fetching container status...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
