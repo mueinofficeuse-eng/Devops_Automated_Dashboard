@@ -1,111 +1,95 @@
-# 🚀 DIY DevOps Dashboard 
-
-A professional-grade DevOps Dashboard from scratch. 
+# 🚀 Devops_Automated_Dashboard
+A professional-grade DevOps Dashboard from scratch. This guide is optimized for **AWS EC2 (Amazon Linux 2023)**.
 
 ---
 
-## ☁️ AWS Setup (Amazon Linux 2023)
-
-If you are using this on an **AWS EC2 (Amazon Linux 2023)** instance, follow these steps:
+## ☁️ Phase 1: AWS Infrastructure Setup
+Before connecting to your server, configure your AWS Security Group.
 
 ### 1. Security Group Configuration
-Ensure your EC2 Security Group has the following ports open (Inbound rules):
-- `5001`: Dashboard Web UI
-- `8080`: Jenkins Web UI
-- `5432`: PostgreSQL (Only if you need external access)
+Add these **Inbound Rules** in the AWS Console:
+- `22` (SSH): Your IP
+- `5001` (Dashboard UI): Anywhere (0.0.0.0/0)
+- `8080` (Jenkins UI): Anywhere (0.0.0.0/0)
 
-### 2. Automated Setup
-I've included a script to handle all installations (`dnf`, `docker`, `python3`):
+### 2. Connect to EC2
 ```bash
-chmod +x setup_aws.sh
-./setup_aws.sh
+ssh -i "your-key.pem" ec2-user@<YOUR_PUBLIC_IP>
 ```
-*Note: You may need to logout and log back in for Docker permissions to take effect.*
 
 ---
 
-## 📁 Project Structure 
+## 📁 Phase 2: Project Installation
+On your EC2 instance, clone and prepare the folder.
 
-- `app/`: The "Brain" - where the Flask web server and Database models live.
-- `scripts/`: The "Hands" - Python scripts that reach out to GitHub, Jenkins, and Docker to grab data.
-- `static/ & templates/`: The "Face" - The HTML and CSS that make the dashboard look beautiful.
-- `docker-compose.yml`: The "Foundation" - A single file that sets up your Database (PostgreSQL) and Jenkins automatically.
-
----
-
-## 🛠️ Phase 1: Prepare Your Environment
-
-Before we start, make sure you have **Python 3** and **Docker Desktop** installed on your Machine.
-
-### 1. Create a Virtual Environment
-This keeps your project's libraries separate from your computer's system libraries.
 ```bash
-cd devops_dashboard
+# 1. Install Git
+sudo dnf install git -y
+
+# 2. Clone the repo
+git clone <YOUR_REPO_URL>
+cd Devops_Automated_Dashboard
+
+# 3. FIX PERMISSIONS (CRITICAL)
+# This ensures you don't get 'Permission Denied' errors later
+sudo chown -R ec2-user:ec2-user ~/Devops_Automated_Dashboard
+```
+
+---
+
+## � Phase 3: Docker & Infrastructure
+If the `docker-compose` command is missing or errors out:
+
+### 1. Install Docker Compose Manually
+```bash
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
+### 2. Launch Services
+```bash
+docker-compose up -d
+```
+*Verify with `docker ps` to see `devops_db` and `devops_jenkins`.*
+
+---
+
+## 🔑 Phase 4: API Keys & Secrets
+Create your `.env` file to store your credentials.
+
+### 1. Create the file
+```bash
+sudo nano .env
+```
+
+### 2. Paste your details
+```env
+DATABASE_URL=postgresql://devops_user:devops_password@db:5432/devops_dashboard
+GITHUB_TOKEN=ghp_your_github_token
+REPO_OWNER=your_github_username
+REPO_NAME=Devops_Automated_Dashboard
+JENKINS_URL=http://jenkins:8080
+JENKINS_USER=admin
+JENKINS_TOKEN=your_jenkins_api_token
+```
+*Note: To get the Jenkins password, run `docker logs devops_jenkins`.*
+
+---
+
+## � Phase 5: Python Environment & Data Collection
+Set up the "Brain" and fetch the initial data.
+
+```bash
+# 1. Create Virutal Environment
 python3 -m venv venv
 source venv/bin/activate
-```
-*You should now see `(venv)` at the start of your terminal line.*
 
-### 2. Install the Libraries
-```bash
+# 2. Install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
-```
 
----
-
-## 🐳 Phase 2: Launch the Infrastructure
-
-We need a database to store our data and Jenkins to monitor builds. Docker makes this easy.
-
-1.  **Open Docker Desktop** and make sure it's running.
-2.  **Start the services**:
-    ```bash
-    docker-compose up -d
-    ```
-    - `db`: A PostgreSQL database will start on port 5432.
-    - `jenkins`: Jenkins will start on port 8080.
-
----
-
-## 🔑 Phase 3: Get Your API Keys (Crucial Step)
-
-The dashboard needs permission to talk to external tools.
-
-### 1. GitHub Token
-- Go to [GitHub Settings > Developer Settings > Personal Access Tokens > Tokens (classic)](https://github.com/settings/tokens).
-- Generate a new token with `repo` permissions.
-- **Copy it immediately!**
-
-### 2. Jenkins Token
-- Open `http://localhost:8080` in your browser.
-- Follow the instructions to unlock Jenkins (the password is found in the Docker logs: `docker logs devops_jenkins`).
-- Go to `User (top right) > Configure > API Token > Add New Token`.
-
-### 3. Set Up Your `.env` File
-Create a new file named `.env` in the `devops_dashboard` folder (or edit the example):
-```env
-GITHUB_TOKEN=your_token_here
-REPO_OWNER=your_github_username
-REPO_NAME=name_of_any_public_repo
-JENKINS_TOKEN=your_jenkins_token
-```
-
----
-
-## 📊 Phase 4: Collect Data & Run
-
-Now we tell our "Hands" (scripts) to go get the data and put it in the "Foundation" (database).
-
-### 1. Initialize the Database
-Run the app once just to create the tables:
-```bash
-python3 -m app.app
-```
-*(Stop it with `Ctrl+C` once it says it's running).*
-
-### 2. Run the Collectors
-Run these commands to pull live data:
-```bash
+# 3. RUN COLLECTORS (IMPORTANT!)
+# You must run these to see any data on the dashboard
 python3 -m scripts.github_collector
 python3 -m scripts.jenkins_collector
 python3 -m scripts.docker_collector
@@ -113,19 +97,31 @@ python3 -m scripts.docker_collector
 
 ---
 
-## 🌐 Phase 5: View Your Dashboard
+## 🌐 Phase 6: Go Live
+Launch the dashboard for external access.
 
-Now, start the web server for real:
+### Option A: Standard Run (Terminal must stay open)
 ```bash
 python3 -m app.app
 ```
-Open your browser to: **[http://localhost:5001](http://localhost:5001)**
+
+### Option B: Background Run (Stays online forever)
+```bash
+nohup python3 -m app.app > dashboard.log 2>&1 &
+```
 
 ---
 
-## 💡 Troubleshooting for Beginners
+## �️ Troubleshooting Commands
+- **Check if running**: `ps aux | grep app.app`
+- **View logs**: `tail -f dashboard.log`
+- **Stop background app**: `pkill -f app.app`
+- **Fix Permission Denied**: `sudo chown -R ec2-user:ec2-user ~/Devops_Automated_Dashboard`
+- **Reset Database**: `docker-compose down -v && docker-compose up -d`
 
-- **"Docker not found"**: Make sure Docker Desktop is open.
-- **"ModuleNotFoundError"**: Ensure you ran `source venv/bin/activate` before installing requirements.
-- **"Port already in use"**: If 5001 is busy, change `port=5001` in `app/app.py` to `port=5002`.
-- **Empty Dashboard?**: Make sure you ran the `scripts/` commands in Phase 4. They are the ones that actually "fill" the dashboard with data!
+---
+
+## 💡 Port Summary
+- **5001**: Dashboard Web UI
+- **8080**: Jenkins Web UI
+- **5432**: PostgreSQL Internal Port
