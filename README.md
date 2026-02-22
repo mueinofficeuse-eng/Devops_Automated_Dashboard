@@ -1,4 +1,5 @@
 # 🚀 Devops_Automated_Dashboard
+![Workflow Diagram](assets/workflow_diagram.png)
 A professional-grade DevOps Dashboard from scratch. This guide is optimized for **AWS EC2 (Amazon Linux 2023)**.
 
 ---
